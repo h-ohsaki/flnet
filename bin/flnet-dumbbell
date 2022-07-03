@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+#
+# Flnet simulation scenario with dumbbell topology.
+# Copyright (c) 2022, Hiroyuki Ohsaki.
+# All rights reserved.
+#
+# $Id: $
+#
+
+import sys
+
+from perlcompat import die, warn, getopts
+import flnet
+import tbdump
+
+def usage():
+    die(f"""\
+usage: {sys.argv[0]} [-v] [file...]
+  -v    verbose mode
+""")
+
+def main():
+    opt = getopts('vn:d:b:l:ST:') or usage()
+    verbose = opt.v
+    nflows = int(opt.n) if opt.n else 10
+    delay = float(opt.d) if opt.d else 1.
+    # 100 [Mbit/s] with 1,500 byte packet
+    bandwidth = float(opt.b) if opt.b else 8.33
+    qsize = int(opt.l) if opt.l else 10
+    staggered = opt.S
+    max_time = float(opt.T) if opt.T else 10000
+
+    sched = flnet.Scheduler(max_time=max_time)
+    monitor = flnet.Monitor(sched)
+
+    senders = [flnet.Sender(sched) for _ in range(nflows)]
+    router = flnet.Router(sched)
+    receiver = flnet.Receiver(sched)
+    for sender in senders:
+        sender.dst = receiver
+        sender.connect(router, delay=delay)
+    router.connect(receiver, delay=delay)
+    router.bandwidth = bandwidth
+    router.qsize = qsize
+
+    while sched.is_running():
+        for sender in senders:
+            if staggered:
+                if sched.time >= 100 * sender.id_:
+                    sender.advance()
+            else:
+                sender.advance()
+        router.advance()
+        receiver.advance()
+        sched.advance()
+        monitor.display([senders[0], senders[1], router])
+
+if __name__ == "__main__":
+    main()
