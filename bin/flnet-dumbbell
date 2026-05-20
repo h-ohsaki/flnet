@@ -53,7 +53,7 @@ def main():
         router.advance()
         receiver.advance()
         sched.advance()
-        monitor.display([senders[0], senders[1], router])
+        monitor.display(senders[:5] + [router])
 
 if __name__ == "__main__":
     main()

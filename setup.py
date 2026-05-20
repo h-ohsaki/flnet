@@ -11,9 +11,9 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
     name='flnet',
-    version='1.0',
+    version='1.3',
     author='Hiroyuki Ohsaki',
-    author_email='ohsaki@lsnl.jp',
+    author_email='code@lsnl.jp',
     description='Fluid-based large-scale TCP/IP network simulator',
     long_description=long_description,
     long_description_content_type='text/markdown',

@@ -27,4 +27,4 @@ The latest version of **flnet** is available at PyPI
 
 # AUTHOR
 
-Hiroyuki Ohsaki <ohsaki[atmark]lsnl.jp>
+Hiroyuki Ohsaki <code[atmark]lsnl.jp>

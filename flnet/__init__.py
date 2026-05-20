@@ -31,10 +31,10 @@ class Message:
                  dst=None,
                  tstamp=None,
                  ack=False,
-                 w=1.,
-                 p=0.,
-                 valid_since=0.,
-                 rate=0.):
+                 w=1,
+                 p=0,
+                 valid_since=0,
+                 rate=0):
         self.src = src
         self.dst = dst
         self.tstamp = tstamp
@@ -94,9 +94,9 @@ class Sender(Node):
         super().__init__(scheduler)
         self.src = self
         self.dst = None
-        self.w = 1.
-        self.rtt = 0.
-        self.p = 0.
+        self.w = 1
+        self.rtt = 0
+        self.p = 0
         self.last_w = self.w
 
     def __repr__(self):
@@ -117,7 +117,7 @@ class Sender(Node):
             self.w += dw * self.scheduler.delta
             rate = self.w / self.rtt
         else:
-            rate = 0.
+            rate = 0
 
         # forward a message corresponding Data packets.
         msg = Message(src=self.src,
@@ -156,7 +156,7 @@ class Router(Node):
     def __init__(self, scheduler, bandwidth=1., qsize=10):
         super().__init__(scheduler)
         self.q = 0
-        self.p = 0.
+        self.p = 0
         self.in_rate = 0.
         self.bandwidth = bandwidth
         self.qsize = qsize
@@ -183,15 +183,15 @@ class Router(Node):
         self.q = min(max(self.q, 0), self.qsize)
         # Detect the loss rate and outgoing rate.
         if self.q >= self.qsize:
-            self.p = min(max(dq / self.in_rate, 0.), 1.)
+            self.p = min(max(dq / self.in_rate, 0), 1)
             rate = self.bandwidth
         else:
-            self.p = 0.
+            self.p = 0
             rate = self.in_rate
 
         for msg in msgs:
             # Overwrite the loss rate and sending rate.
-            msg.p = min(max(msg.p + self.p, 0.), 1.)
+            msg.p = min(max(msg.p + self.p, 0), 1)
             msg.rate = rate
 
             # Forward the message to the neighbor.
@@ -201,11 +201,15 @@ class Router(Node):
             node.enqueue(msg)
 
 class Monitor:
-    def __init__(self, scheduler=None):
+    def __init__(self, scheduler=None, interval=.1):
         self.scheduler = scheduler
+        self.interval = interval
+        self.last_display = 0
 
     def display(self, nodes):
         t = self.scheduler.time
+        if t - self.last_display < self.interval:
+            return
         values = [f't={t:.3f}']
         for node in nodes:
             n = node.id_
@@ -216,3 +220,4 @@ class Monitor:
                 values.append(f'q{n}={node.q:.3f}')
                 values.append(f'p{n}={node.p:.3f}')
         print('\t'.join(values))
+        self.last_display = t
